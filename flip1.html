@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Орел и Решка</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      background-color: #121212;
+      color: #fff;
+    }
+    #content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+    .hidden {
+      display: none;
+    }
+    nav {
+      display: flex;
+      justify-content: space-around;
+      background-color: #1e1e1e;
+      padding: 10px 0;
+    }
+    button {
+      background-color: #333;
+      color: #fff;
+      border: none;
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+    button:hover {
+      background-color: #444;
+    }
+    .bet-options {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin: 20px 0;
+    }
+    .bet-option {
+      background-color: #444;
+      margin: 5px;
+      padding: 10px 15px;
+      font-size: 16px;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .bet-option:hover {
+      background-color: #555;
+    }
+    .selected {
+      background-color: #007bff;
+    }
+    .coin {
+      width: 100px;
+      height: 100px;
+      background: gold;
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 24px;
+      color: #000;
+      animation: flip 1s ease-in-out;
+    }
+    @keyframes flip {
+      0% { transform: rotateY(0); }
+      50% { transform: rotateY(180deg); }
+      100% { transform: rotateY(360deg); }
+    }
+    .highlight {
+      animation: flash 0.5s ease;
+    }
+    @keyframes flash {
+      0% { background-color: #fff; }
+      100% { background-color: #121212; }
+    }
+  </style>
+</head>
+<body>
+  <div id="content">
+    <!-- Sections -->
+    <div id="leaderboard" class="hidden">
+      <h1>Leaderboard</h1>
+      <p>Top players and their earnings.</p>
+    </div>
+    <div id="game">
+      <h1>Игра: Орел или Решка</h1>
+      <p>Выберите ставку и сделайте выбор!</p>
+      <div class="bet-options">
+        <button class="bet-option" onclick="selectBet(0.5)">0.5 SOL</button>
+        <button class="bet-option" onclick="selectBet(1)">1 SOL</button>
+        <button class="bet-option" onclick="selectBet(5)">5 SOL</button>
+        <button class="bet-option" onclick="selectBet(10)">10 SOL</button>
+      </div>
+      <div>
+        <button onclick="playGame('heads')">Орел</button>
+        <button onclick="playGame('tails')">Решка</button>
+      </div>
+      <div id="coinContainer" style="margin: 20px;">
+        <div id="coin" class="coin hidden">H</div>
+      </div>
+      <p id="selectedBet">Выбранная ставка: -</p>
+      <p id="gameResult"></p>
+    </div>
+    <div id="frens" class="hidden">
+      <h1>Frens</h1>
+      <p>Information about invited friends and their earnings.</p>
+    </div>
+    <div id="wallet" class="hidden">
+      <h1>Wallet</h1>
+      <p>Пополните баланс на адрес Solana:</p>
+      <p><strong>Ваш адрес: </strong><span id="walletAddress"></span></p>
+    </div>
+  </div>
+  <nav>
+    <button onclick="showSection('leaderboard')">Leaderboard</button>
+    <button onclick="showSection('game')">Game</button>
+    <button onclick="showSection('frens')">Frens</button>
+    <button onclick="showSection('wallet')">Wallet</button>
+  </nav>
+
+  <script>
+    const walletAddress = "Ваш_Solana_Адрес";
+    document.getElementById('walletAddress').textContent = walletAddress;
+
+    let selectedBet = null;
+
+    function showSection(sectionId) {
+      // Hide all sections
+      document.querySelectorAll('#content > div').forEach(div => div.classList.add('hidden'));
+      // Show selected section
+      document.getElementById(sectionId).classList.remove('hidden');
+    }
+
+    function selectBet(amount) {
+      selectedBet = amount;
+      document.querySelectorAll('.bet-option').forEach(button => button.classList.remove('selected'));
+      const button = Array.from(document.querySelectorAll('.bet-option')).find(btn => btn.textContent.includes(amount));
+      if (button) button.classList.add('selected');
+      document.getElementById('selectedBet').textContent = `Выбранная ставка: ${amount} SOL`;
+    }
+
+    function playGame(choice) {
+      if (!selectedBet) {
+        alert("Выберите ставку.");
+        return;
+      }
+
+      // Animate coin flip
+      const coin = document.getElementById('coin');
+      coin.classList.remove('hidden');
+      coin.textContent = choice === 'heads' ? 'H' : 'T';
+      coin.style.animation = 'flip 1s ease-in-out';
+
+      setTimeout(() => {
+        const result = Math.random() < 0.5 ? 'heads' : 'tails';
+        const isWin = result === choice;
+        const profit = isWin ? selectedBet * 1.8 : -selectedBet;
+
+        // Show result on coin
+        coin.textContent = result === 'heads' ? 'H' : 'T';
+
+        document.getElementById('gameResult').textContent = isWin
+          ? `Вы выиграли! Ваш выигрыш: ${(selectedBet * 1.9).toFixed(2)} SOL`
+          : `Вы проиграли. Итог: ${profit.toFixed(2)} SOL`;
+
+        // Highlight win/lose effect
+        if (isWin) {
+          coin.classList.add('highlight');
+          setTimeout(() => coin.classList.remove('highlight'), 500);
+        }
+      }, 1000);
+    }
+  </script>
+</body>
+</html>
